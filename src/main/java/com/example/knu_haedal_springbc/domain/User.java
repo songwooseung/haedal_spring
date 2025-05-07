@@ -6,19 +6,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@NoArgsConstructor // user 생성자 대체
+@NoArgsConstructor // 밑에 nullable = false가 있기에 @RequiredArgsConstructor나 @AllArgsConstructor로 바꿔야하지 않을까?
 @Getter
 @Setter
-
-public class User {
-    @Id // primary key로 자동 인식
-    @GeneratedValue(strategy = GenerationType.AUTO) // 자동으로 아이디 생성할 때 번호 매겨줌 순서대로
+public class User{
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false, unique = true) // unique
-    private String username; // 실제 로그인할 때 쓰는 id
+    @Column(nullable = false, unique = true)
+    private String username;
 
     @Column(nullable = false)
     private String password;
@@ -27,15 +27,27 @@ public class User {
     private String name;
 
     @Column(length = 500)
-    private String bio; // 유저 정보
+    private String bio;
 
-    @Column(name ="joined_at", nullable = false)
+    @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
 
-    @Column(name ="image_at")
+    @Column(name = "image_url")
     private String imageUrl;
 
-    public User(String username, String password, String name) {
+    @OneToMany(mappedBy = "user")
+    private List<Post> posts;
+
+    //@OneToMany(mappedBy = "user")
+    //private List<Like> likes;
+
+    //@OneToMany(mappedBy = "follower")
+    //private List<Follow> followings;
+
+    //@OneToMany(mappedBy =  "following")
+    //private List<Follow> followers;
+
+    public User(String username, String password, String name){ //생성자
         this.username = username;
         this.password = password;
         this.name = name;
@@ -43,6 +55,4 @@ public class User {
         this.joinedAt = LocalDateTime.now();
         this.imageUrl = null;
     }
-
-
 }
