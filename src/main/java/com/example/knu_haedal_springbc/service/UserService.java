@@ -17,7 +17,7 @@ public class UserService {
     public UserSimpleResponseDto saveUser(User newUser) {
         // 중복 회원 검증
         if (userRepository.existsByUsername(newUser.getUsername())) {
-            throw new IllegalStateException("중복되는 username입니다.");
+            throw new IllegalStateException("중복되는 username 입니다.");
         }
 
         userRepository.save(newUser);
