@@ -4,6 +4,7 @@ import com.example.knu_haedal_springbc.domain.Post;
 import com.example.knu_haedal_springbc.domain.User;
 import com.example.knu_haedal_springbc.dto.PostResponseDto;
 import com.example.knu_haedal_springbc.dto.UserSimpleResponseDto;
+import com.example.knu_haedal_springbc.repository.LikeRepository;
 import com.example.knu_haedal_springbc.repository.PostRepository;
 import com.example.knu_haedal_springbc.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +19,15 @@ public class PostService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final ImageService imageService;
-    // private final LikeRepository likeRepository;
+    private final LikeRepository likeRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository, UserRepository userRepository, UserService userService, ImageService imageService/*,LikeRepository likeRepository*/) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, UserService userService, ImageService imageService, LikeRepository likeRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.userService = userService;
         this.imageService = imageService;
-        //this.likeRepository = likeRepository;
+        this.likeRepository = likeRepository;
     }
     public void savePost(Post post){
         Post saved = postRepository.save(post);
@@ -40,22 +41,41 @@ public class PostService {
 
         return posts.stream().map(post -> convertPostToDto(targetUser, post)).toList();
     }
-    private PostResponseDto convertPostToDto(User currentUser, Post post) {
-        User author = post.getUser();
-        UserSimpleResponseDto userSimpleResponseDto = userService.convertUserToSimpleDto(currentUser, author);
-        String imageUrl = post.getImageUrl();
-        String imageData = imageService.encodeImageToBase64(System.getProperty("user.dir")
-                + "/src/main/resources/static/" + imageUrl);
+//    private PostResponseDto convertPostToDto(User currentUser, Post post) {
+//        User author = post.getUser();
+//        UserSimpleResponseDto userSimpleResponseDto = userService.convertUserToSimpleDto(currentUser, author);
+//        String imageUrl = post.getImageUrl();
+//        String imageData = imageService.encodeImageToBase64(System.getProperty("user.dir")
+//                + "/src/main/resources/static/" + imageUrl);
+//
+//        return new PostResponseDto(
+//                post.getId(),
+//                userSimpleResponseDto,
+//                imageData,
+//                post.getContent(),
+//                0L,
+//                false,
+//                post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"))
+//        );
+//    }
+private PostResponseDto convertPostToDto(User currentUser, Post post) {
+    User author = post.getUser();
+    UserSimpleResponseDto userSimpleResponseDto = userService.convertUserToSimpleDto(currentUser, author);
+    String imageUrl = post.getImageUrl();
+    String imageData = imageService.encodeImageToBase64(System.getProperty("user.dir")
+            + "/src/main/resources/static/" + imageUrl);
 
-        return new PostResponseDto(
-                post.getId(),
-                userSimpleResponseDto,
-                imageData,
-                post.getContent(),
-                0L,
-                false,
-                post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"))
-        );
-    }
+    return new PostResponseDto(
+            post.getId(),
+            userSimpleResponseDto,
+            imageData,
+            post.getContent(),
+            likeRepository.countByPost(post),
+            likeRepository.existsByUserAndPost(currentUser, post),
+            post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"))
+    );
+}
+
+
 }
 

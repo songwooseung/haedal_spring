@@ -4,6 +4,7 @@ import com.example.knu_haedal_springbc.domain.User;
 import com.example.knu_haedal_springbc.dto.UserDetailResponseDto;
 import com.example.knu_haedal_springbc.dto.UserSimpleResponseDto;
 import com.example.knu_haedal_springbc.dto.UserUpdateRequestDto;
+import com.example.knu_haedal_springbc.repository.FollowRepository;
 import com.example.knu_haedal_springbc.repository.PostRepository;
 import com.example.knu_haedal_springbc.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +19,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final ImageService imageService;
     private final PostRepository postRepository;
+    private final FollowRepository followRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, ImageService imageService, PostRepository postRepository) {
+    public UserService(UserRepository userRepository, ImageService imageService, PostRepository postRepository, FollowRepository followRepository) {
         this.userRepository = userRepository;
         this.imageService = imageService;
         this.postRepository = postRepository;
+        this.followRepository = followRepository;
     }
 
     public UserSimpleResponseDto saveUser(User newUser) {
@@ -45,7 +48,7 @@ public class UserService {
                 targetUser.getUsername(), // currentUser을 targetUser로
                 targetUser.getName(), // currentUser을 targetUser로
                 imageData,
-                false
+                followRepository.existsByFollowerAndFollowing(currentUser, targetUser)
         );
     }
 
@@ -62,8 +65,8 @@ public class UserService {
                 targetUser.getBio(),
                 targetUser.getJoinedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm")),
                 postRepository.countByUser(targetUser),
-                0L,
-                0L
+                followRepository.countByFollowing(targetUser),
+                followRepository.countByFollower(targetUser)
         );
     }
 
